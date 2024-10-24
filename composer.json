@@ -1,6 +1,7 @@
 {
     "name": "iescarro/codeigniter3-wire",
-    "description": "CodeIgniter3 Wire",
+    "description": "A front-end framework for CodeIgniter3",
+    "homepage": "https://github.com/iescarro/codeigniter3-wire",
     "license": "MIT",
     "autoload": {
         "psr-4": {
