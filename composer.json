@@ -5,7 +5,7 @@
     "license": "MIT",
     "autoload": {
         "psr-4": {
-            "Codeigniter3Wire\\": "src/"
+            "Codeigniter3\\Wire\\": "src/"
         }
     },
     "authors": [
