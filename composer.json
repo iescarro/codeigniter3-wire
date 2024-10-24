@@ -1,0 +1,17 @@
+{
+    "name": "iescarro/codeigniter3-wire",
+    "description": "CodeIgniter3 Wire",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Codeigniter3Wire\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Ian",
+            "email": "ian.escarro@gmail.com"
+        }
+    ],
+    "require": {}
+}
