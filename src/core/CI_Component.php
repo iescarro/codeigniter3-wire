@@ -81,7 +81,7 @@ class CI_Component
 
   function view($view, $data = null)
   {
-    print_pre($this->get_properties_and_methods());
+    // print_pre($this->get_properties_and_methods());
 
     list($this->component_name, $this->properties, $this->methods) = $this->get_properties_and_methods();
 
@@ -92,34 +92,65 @@ class CI_Component
 
   function load_scripts()
   {
-    return '<script src="https://unpkg.com/@hotwired/stimulus@3.0.1/dist/stimulus.umd.js"></script>';
+    return "\n<script src='https://unpkg.com/@hotwired/stimulus@3.0.1/dist/stimulus.umd.js'></script>\n\n";
   }
 
   function load_component_scripts()
   {
-    $targets = [];
+    $this->CI->load->helper(['url']);
+    $base_url = trim(base_url(), '/');
+
+    $component_name = $this->component_name;
+    $data_targets = '';
+    $data = [];
+    $javascript_properties = '';
     foreach ($this->properties as $property) {
-      $targets[] = $property->name;
+      $property_name =  $property->name;
+      $targets[] = $property_name;
+      $data[$property_name] = 'this.' . $property_name;
+      $javascript_properties .= "
+        get {$property_name}() { return this.{$property_name}Target.textContent; }
+        set {$property_name}(value) { this.{$property_name}Target.textContent = value; }";
+      $data_targets = "
+              _this.{$property_name} = data.{$property_name};
+              console.log('Updated {$property_name}:', _this.{$property_name});
+              ";
     }
+
     $javascript_methods = '';
     foreach ($this->methods as $method) {
       $method_name = $method->name;
+
+      $method_parameters = '';
+      $params = [];
+      foreach ($method->getParameters() as $parameter) {
+        $parameter_name = $parameter->getName();
+        $method_parameters .= "
+          const {$parameter_name} = e.currentTarget.dataset.{$parameter_name};";
+        $params[$parameter_name] = $parameter_name;
+      }
+
+      $payload = array('component' => $component_name, 'action' => array('name' => $method_name, 'params' => $params), 'data' => $data);
+
       $javascript_methods .= "
-        {$method_name}() {
-          fetch('http://localhost:8888/iceithq/backlog/component_api/request', {
+        {$method_name}(e) {
+$method_parameters
+          const payload = " . stringify_payload($payload) . ";
+          console.log('Payload before sending', payload);
+          const _this = this;
+          fetch('{$base_url}/component_api/request', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ 
-                controller: '{$this->component_name}', 
-                action: '{$method_name}'
-              })
+              body: JSON.stringify(payload)
             })
-            .then(response => response.json())
+            .then(response => {
+              return response.json()
+            })
             .then(data => {
-              this.counterTarget.textContent = JSON.stringify(data);
+              console.log('Response data', data);
+{$data_targets}
             })
             .catch(error => {
-              this.outputTarget.textContent = 'Error fetching data';
               console.error(error);
             });
         }";
@@ -134,8 +165,37 @@ class CI_Component
   
   application.register('{$this->component_name}', class extends Stimulus.Controller {
     static targets = " . json_encode($targets) . "
+$javascript_properties
 $javascript_methods
   });
 </script>";
   }
+}
+
+function stringify_payload($payload)
+{
+  $component_name = $payload['component'];
+
+  $action_name = $payload['action']['name'];
+  $action = "{name:'$action_name'";
+  $params = $payload['action']['params'];
+  if (count($params) > 0) {
+    $action .= ',params:{';
+    $i = 0;
+    foreach ($params as $key => $value) {
+      if ($i++ > 0) $action . ',';
+      $action .= $key . ':' . $key;
+    }
+    $action .= '}';
+  }
+  $action .= '}';
+
+  $data = '{';
+  $i = 0;
+  foreach ($payload['data'] as $key => $value) {
+    if ($i++ > 0) $data .= ',';
+    $data .= $key . ': this.' . $key;
+  }
+  $data .= '}';
+  return "{component:'$component_name', action:{$action}, data:{$data}}";
 }

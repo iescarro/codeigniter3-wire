@@ -55,25 +55,23 @@ class Component_api extends CI_Controller
   {
     $raw_json = file_get_contents('php://input');
     $request = json_decode($raw_json);
-    print_pre($request);
 
     $component = $request->component;
-    $action = $request->action;
+    $action = $request->action->name;
+    $params = isset($request->action->params) ? $request->action->params : [];
     $data = $request->data;
-    // print_pre($data);
 
     $c = new $component();
     $c->assign_data($data);
-    print_pre(get_object_vars($c));
-    $c->$action();
+
+    $method = new ReflectionMethod($c, $action);
+    $args = [];
+    foreach ($params as $key => $value) {
+      $args[] = $value;
+    }
+    $method->invokeArgs($c, $args);
 
     $response = get_object_vars($c);
-    // print_pre($c->get_properties_and_methods());
-
-    // $number = $this->session->userdata('number');
-    // $number = $number ? $number : 0;
-    // $data->number = $number++;
-    // $this->session->set_userdata('number', $number);
     echo json_encode($response);
   }
 }
