@@ -1,6 +1,6 @@
 ## Introduction
 
-CodeIgniter3-Wire is a full-stack framework for Laravel that allows you to build dynamic UI components without leaving PHP.
+CodeIgniter3-Wire is a full-stack framework for CodeIgniter3 that allows you to build dynamic UI components without leaving PHP.
 
 ## Official Documentation
 
@@ -12,7 +12,7 @@ Thank you for considering contributing to CodeIgniter3-Wire! You can read the co
 
 ## Code of Conduct
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by Laravel's Code of Conduct.
+In order to ensure that the CodeIgniter3 community is welcoming to all, please review and abide by CodeIgniter3's Code of Conduct.
 
 ## Security Vulnerabilities
 
